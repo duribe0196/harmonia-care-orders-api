@@ -1,0 +1,23 @@
+name: Create Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag Name"
+        required: true
+
+permissions: write-all
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create Tag
+        run: git tag ${{ github.event.inputs.tag_name }}
+
+      - name: Push Tag
+        run: git push origin ${{ github.event.inputs.tag_name }}
