@@ -14,9 +14,22 @@ class ShoppingCart {
   private async initializeCart(): Promise<IOrderDocument> {
     let cart: IOrderDocument | null = null;
     if (this.userId) {
-      cart = await Order.findOne({ userId: this.userId, orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] } });
+      cart = await Order.findOne({
+        $or: [
+          { userId: this.userId, orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] } },
+          { sessionId: this.sessionId, orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] } }
+        ]
+      });
+      // Si se encontró un carrito con sessionId pero sin userId, actualiza el userId
+      if (cart && !cart.userId) {
+        cart.userId = this.userId;
+        await cart.save();
+      }
     } else if (this.sessionId) {
-      cart = await Order.findOne({ sessionId: this.sessionId, orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] } });
+      cart = await Order.findOne({
+        sessionId: this.sessionId,
+        orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] }
+      });
     }
 
     if (!cart) {
@@ -37,7 +50,6 @@ class ShoppingCart {
     }
     return cart;
   }
-
   async addProduct(productId: mongoose.Types.ObjectId, quantity: number): Promise<IOrderDocument> {
     const cart = await this.initializeCart();
     if (cart.orderStatus === OrderStatus.COMPLETED || cart.orderStatus === OrderStatus.CANCELLED) {
