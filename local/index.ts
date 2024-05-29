@@ -6,7 +6,7 @@ const eventName = process.argv[3];
 let response;
 (async () => {
   switch (eventName) {
-    case "init-order":
+    case "add-product-to-order":
       response = await handleHttpRequests(
         addProductToOrder.event as any,
         addProductToOrder.context as any,

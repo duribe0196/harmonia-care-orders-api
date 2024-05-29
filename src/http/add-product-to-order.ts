@@ -4,23 +4,22 @@ import ShoppingCart from "./ShoppingCart";
 import {MongooseError} from "mongoose";
 import User from "../db/models/user";
 
-interface IInitOrderArgs {
+interface IAddProductToOrderArgs {
   product: IOrderProduct;
   userSub?: string;
   sessionId: string;
 }
 
 export default async function addProductsToOrder(
-  args: IInitOrderArgs,
+  args: IAddProductToOrderArgs,
 ): Promise<{ body: string; statusCode: number; sessionId?: string; }> {
   const {
     product,
     userSub,
     sessionId,
   } = args;
-  console.log("Init order - init new order with product", product.productId);
-
   try {
+    console.log(`Add product to order - init new order with product ${product.productId.toString()}`);
     const user = await User.findOne({sub: userSub})
     const productFound = await Product.findById(product.productId)
     if (!productFound) {

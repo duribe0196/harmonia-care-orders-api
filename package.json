@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "local:init-order": " npx ts-node local/index.ts -- init-order",
+    "local:add-product-to-order": " npx ts-node local/index.ts -- add-product-to-order",
     "local:get-order": " npx ts-node local/index.ts -- get-order"
   },
   "keywords": [],
