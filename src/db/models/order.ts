@@ -70,21 +70,24 @@ const orderSchema: Schema = new Schema(
       enum: Object.values(OrderStatus),
       default: OrderStatus.PENDING,
     },
-    totalPrice: { type: Number, required: true },
+    totalPrice: { type: Number },
     specialInstructions: { type: String },
-    paymentMethod: { type: String, required: true },
-    deliveryAddress: { type: String, required: true },
+    paymentMethod: { type: String },
+    deliveryAddress: { type: String },
   },
   { timestamps: true },
 );
 
 orderSchema.pre<IOrderDocument>("save", function (next) {
   if (this.isModified("orderStatus")) {
-    this.statusHistory.push({
-      status: this.orderStatus,
-      date: new Date(),
-      updatedBy: this.get("_updatedBy"), // Assume this field is set manually before saving
-    });
+    const lastStatus = this.statusHistory[this.statusHistory.length - 1];
+    if (!lastStatus || lastStatus.status !== this.orderStatus) {
+      this.statusHistory.push({
+        status: this.orderStatus,
+        date: new Date(),
+        updatedBy: this.get("_updatedBy"), // Assume this field is set manually before saving
+      });
+    }
   }
   next();
 });

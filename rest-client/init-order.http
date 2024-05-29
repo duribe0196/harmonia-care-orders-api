@@ -1,0 +1,9 @@
+### POST request to add products to an order
+POST {{baseUrl}}/order
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "productId": "66562e3ec8452f39cda8088e",
+  "quantity": 1
+}

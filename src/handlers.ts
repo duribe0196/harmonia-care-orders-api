@@ -3,9 +3,10 @@ dotenv.config();
 import { APIGatewayEvent, Context, Callback } from "aws-lambda";
 import { v4 as uuid } from "uuid";
 import { getNotFoundResponse } from "./utils";
-import initOrder from "./http/init-order";
+import addProductsToOrder from "./http/add-product-to-order";
 import connectDB from "./db";
 import mongoose from "mongoose";
+import Joi from "joi";
 
 export const handleHttpRequests = async (
   event: APIGatewayEvent,
@@ -37,11 +38,28 @@ export const handleHttpRequests = async (
 
   await connectDB();
   switch (resource) {
-    case "POST-/order/create":
-      const sessionId = requestBody.sessionId || event.headers['Cookie'] || uuid();
+    case "POST-/order":
+      const schema = Joi.object({
+        productId: Joi.string().hex().length(24).required(),
+        quantity: Joi.number().integer().positive().required()
+      });
+
+      const { error, value } = schema.validate(requestBody);
+
+      if (error) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            message: "Validation error",
+            details: error.details,
+          }),
+        };
+      }
+
+      const sessionId = event.headers['Cookie'] || uuid();
       const productId = new mongoose.Types.ObjectId(requestBody.productId);
       const quantity = parseInt(requestBody.quantity);
-      return await initOrder({userSub: userSub, sessionId: sessionId, product: {productId: productId, quantity: quantity}});
+      return await addProductsToOrder({userSub: userSub, sessionId: sessionId, product: {productId: productId, quantity: quantity}});
 
     default:
       return getNotFoundResponse(path, httpMethod);

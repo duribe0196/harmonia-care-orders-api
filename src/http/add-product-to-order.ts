@@ -10,9 +10,9 @@ interface IInitOrderArgs {
   sessionId: string;
 }
 
-export default async function initOrder(
+export default async function addProductsToOrder(
   args: IInitOrderArgs,
-): Promise<{ body: string; statusCode: number }> {
+): Promise<{ body: string; statusCode: number; sessionId?: string; }> {
   const {
     product,
     userSub,
@@ -34,6 +34,7 @@ export default async function initOrder(
     return {
       statusCode: 200,
       body: JSON.stringify(updatedCart),
+      sessionId: sessionId
     };
   } catch (e: unknown) {
     if(e instanceof MongooseError){
