@@ -31,7 +31,6 @@ const connectDB = async () => {
     secretName: MONGODB_SECRET_NAME,
     region: REGION,
   });
-  console.log("Secrets Obtained", mongoDBSecrets);
   const mongoUser = mongoDBSecrets["dbUser"];
   const mongoPassword = mongoDBSecrets["dbPassword"];
   const mongoDBName = mongoDBSecrets["dbName"];
@@ -42,8 +41,9 @@ const connectDB = async () => {
   const URI = `mongodb+srv://${mongoUser}:${mongoPassword}@${connectionString}`;
 
   try {
-    console.log("DB Connection => using new database connection", URI);
+    console.log("DB Connection => using new database connection");
     await mongoose.connect(URI, { dbName: mongoDBName });
+    console.log("DB Connection => successfully database connection");
     isConnected = true;
   } catch (e) {
     console.error(e);
