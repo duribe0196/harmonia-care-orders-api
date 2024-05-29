@@ -43,6 +43,7 @@ export default async function addProductsToOrder(
           body: JSON.stringify({ message: "Error updating order" }),
         };
     }
+    console.error(e)
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Something went wrong" }),
