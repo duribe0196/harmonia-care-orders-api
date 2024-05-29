@@ -1,10 +1,20 @@
 ### POST request to add products to an order
 POST {{baseUrl}}/order
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
 Cookie: session_id={{sessionId}}
 
 {
   "productId": "66562e3ec8452f39cda8088e",
   "quantity": 1
 }
+
+### POST request to add products to an order
+POST {{baseUrl}}/order/auth
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "productId": "66562e3ec8452f39cda8088e",
+  "quantity": 1
+}
+

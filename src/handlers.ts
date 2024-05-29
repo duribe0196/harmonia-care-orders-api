@@ -40,6 +40,7 @@ export const handleHttpRequests = async (
   await connectDB();
   switch (resource) {
     case "POST-/order":
+    case "POST-/order/auth":
       const schema = Joi.object({
         productId: Joi.string().hex().length(24).required(),
         quantity: Joi.number().integer().positive().required(),
