@@ -12,7 +12,7 @@ interface IAddProductToOrderArgs {
 
 export default async function addProductsToOrder(
   args: IAddProductToOrderArgs,
-): Promise<{ body: string; statusCode: number; sessionId?: string }> {
+): Promise<{ body: string; statusCode: number }> {
   const { product, userSub, sessionId } = args;
   try {
     let user;
@@ -57,7 +57,6 @@ export default async function addProductsToOrder(
     return {
       statusCode: 200,
       body: JSON.stringify(updatedCart),
-      sessionId: sessionId,
     };
   } catch (e: unknown) {
     if (e instanceof MongooseError) {
