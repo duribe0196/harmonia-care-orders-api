@@ -18,6 +18,7 @@ export const handleHttpRequests = async (
   console.log(
     `handleHttpRequests - Received method ${httpMethod} in the path ${path}`,
   );
+  console.log(JSON.stringify(event, null, 2));
   // Attempt to parse the request body if present
   let requestBody;
   if (event.body) {
