@@ -29,7 +29,7 @@ export default async function addProductsToOrder(
         body: JSON.stringify({ message: "Product not found" }),
       };
     }
-    const newShoppingCart = new ShoppingCart(user?.id, sessionId);
+    const newShoppingCart = new ShoppingCart(user?.id || null, sessionId);
     const updatedCart = await newShoppingCart.addProduct(product.productId, product.quantity)
     return {
       statusCode: 200,
