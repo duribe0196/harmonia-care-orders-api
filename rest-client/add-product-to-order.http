@@ -2,6 +2,7 @@
 POST {{baseUrl}}/order
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+Cookie: session_id={{sessionId}}
 
 {
   "productId": "66562e3ec8452f39cda8088e",

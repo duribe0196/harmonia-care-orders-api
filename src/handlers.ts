@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import { APIGatewayEvent, Context, Callback } from "aws-lambda";
 import { v4 as uuid } from "uuid";
-import { getNotFoundResponse } from "./utils";
+import { getNotFoundResponse, parseCookies } from "./utils";
 import addProductsToOrder from "./http/add-product-to-order";
 import connectDB from "./db";
 import mongoose from "mongoose";
@@ -41,9 +41,12 @@ export const handleHttpRequests = async (
     case "POST-/order":
       const schema = Joi.object({
         productId: Joi.string().hex().length(24).required(),
-        quantity: Joi.number().integer().positive().required()
+        quantity: Joi.number().integer().positive().required(),
+        sessionId: Joi.string().uuid({ version: "uuidv4" }),
       });
-
+      const cookies = parseCookies(event.headers["Cookie"]);
+      requestBody.sessionId = cookies["session_id"] || uuid();
+      console.log(requestBody);
       const { error, value } = schema.validate(requestBody);
 
       if (error) {
@@ -56,10 +59,13 @@ export const handleHttpRequests = async (
         };
       }
 
-      const sessionId = event.headers['Cookie'] || uuid();
       const productId = new mongoose.Types.ObjectId(requestBody.productId);
       const quantity = parseInt(requestBody.quantity);
-      return await addProductsToOrder({userSub: userSub, sessionId: sessionId, product: {productId: productId, quantity: quantity}});
+      return await addProductsToOrder({
+        userSub: userSub,
+        sessionId: requestBody.sessionId,
+        product: { productId: productId, quantity: quantity },
+      });
 
     default:
       return getNotFoundResponse(path, httpMethod);

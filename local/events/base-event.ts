@@ -18,7 +18,7 @@ export const getBaseEvent = (args: IGetBaseEventsArgs) => {
       "Content-Type": "application/json",
       Host: "lambda-1234567890.execute-api.us-east-1.amazonaws.com",
       "X-Amzn-Trace-Id": "Root=1-1a234567-89abcdef01234567890abcdef",
-      Cookie: '8756a928-8e8c-4ed3-8b2b-b9e91194d57a'
+      Cookie: "session_id=8756a928-8e8c-4ed3-8b2b-b9e91194d57a",
     },
     multiValueHeaders: {
       Accept: ["application/json, text/plain, */*"],
