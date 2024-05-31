@@ -1,12 +1,19 @@
 import mongoose from "mongoose";
-import Order, {IOrderDocument, IOrderProduct, OrderStatus} from "../db/models/order";
+import Order, {
+  IOrderDocument,
+  IOrderProduct,
+  OrderStatus,
+} from "../db/models/order";
 import Product from "../db/models/product";
 
 class ShoppingCart {
   private readonly userId: mongoose.Schema.Types.ObjectId | null;
   private readonly sessionId: string;
 
-  constructor(userId: mongoose.Schema.Types.ObjectId | null, sessionId: string) {
+  constructor(
+    userId: mongoose.Schema.Types.ObjectId | null,
+    sessionId: string,
+  ) {
     this.userId = userId;
     this.sessionId = sessionId;
   }
@@ -16,9 +23,15 @@ class ShoppingCart {
     if (this.userId) {
       cart = await Order.findOne({
         $or: [
-          { userId: this.userId, orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] } },
-          { sessionId: this.sessionId, orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] } }
-        ]
+          {
+            userId: this.userId,
+            orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] },
+          },
+          {
+            sessionId: this.sessionId,
+            orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] },
+          },
+        ],
       });
       // Si se encontró un carrito con sessionId pero sin userId, actualiza el userId
       if (cart && !cart.userId) {
@@ -28,7 +41,7 @@ class ShoppingCart {
     } else if (this.sessionId) {
       cart = await Order.findOne({
         sessionId: this.sessionId,
-        orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] }
+        orderStatus: { $in: [OrderStatus.PENDING, OrderStatus.CHECKOUT] },
       });
     }
 
@@ -37,25 +50,35 @@ class ShoppingCart {
         userId: this.userId,
         sessionId: this.sessionId,
         products: [],
-        statusHistory: [{
-          status: OrderStatus.PENDING,
-          date: new Date(),
-        }],
+        statusHistory: [
+          {
+            status: OrderStatus.PENDING,
+            date: new Date(),
+          },
+        ],
         orderStatus: OrderStatus.PENDING,
         totalPrice: 0,
-        paymentMethod: '',
-        deliveryAddress: '',
+        paymentMethod: "",
+        deliveryAddress: "",
       });
       await cart.save();
     }
     return cart;
   }
-  async addProduct(productId: mongoose.Types.ObjectId, quantity: number): Promise<IOrderDocument> {
+  async addProduct(
+    productId: mongoose.Types.ObjectId,
+    quantity: number,
+  ): Promise<IOrderDocument> {
     const cart = await this.initializeCart();
-    if (cart.orderStatus === OrderStatus.COMPLETED || cart.orderStatus === OrderStatus.CANCELLED) {
+    if (
+      cart.orderStatus === OrderStatus.COMPLETED ||
+      cart.orderStatus === OrderStatus.CANCELLED
+    ) {
       throw new Error("Cannot add products to a completed or cancelled order");
     }
-    const existingProduct = cart.products.find(p => p.productId.equals(productId));
+    const existingProduct = cart.products.find((p) =>
+      p.productId.equals(productId),
+    );
     if (existingProduct) {
       existingProduct.quantity += quantity;
     } else {
@@ -66,23 +89,47 @@ class ShoppingCart {
     return cart;
   }
 
-  async removeProduct(productId: mongoose.Types.ObjectId): Promise<IOrderDocument> {
+  async removeProduct(
+    productId: mongoose.Types.ObjectId,
+  ): Promise<IOrderDocument> {
     const cart = await this.initializeCart();
-    if (cart.orderStatus === OrderStatus.COMPLETED || cart.orderStatus === OrderStatus.CANCELLED) {
-      throw new Error("Cannot remove products from a completed or cancelled order");
+    if (
+      cart.orderStatus === OrderStatus.COMPLETED ||
+      cart.orderStatus === OrderStatus.CANCELLED
+    ) {
+      throw new Error(
+        "Cannot remove products from a completed or cancelled order",
+      );
     }
-    cart.products = cart.products.filter(p => !p.productId.equals(productId));
+    const product = cart.products.find((p) => p.productId.equals(productId));
+    if (product) {
+      if (product.quantity > 1) {
+        product.quantity -= 1;
+      } else {
+        cart.products = cart.products.filter(
+          (p) => !p.productId.equals(productId),
+        );
+      }
+    }
     cart.totalPrice = await this.calculateTotalPrice(cart.products);
     await cart.save();
     return cart;
   }
 
-  async updateProductQuantity(productId: mongoose.Types.ObjectId, quantity: number): Promise<IOrderDocument> {
+  async updateProductQuantity(
+    productId: mongoose.Types.ObjectId,
+    quantity: number,
+  ): Promise<IOrderDocument> {
     const cart = await this.initializeCart();
-    if (cart.orderStatus === OrderStatus.COMPLETED || cart.orderStatus === OrderStatus.CANCELLED) {
-      throw new Error("Cannot update product quantities in a completed or cancelled order");
+    if (
+      cart.orderStatus === OrderStatus.COMPLETED ||
+      cart.orderStatus === OrderStatus.CANCELLED
+    ) {
+      throw new Error(
+        "Cannot update product quantities in a completed or cancelled order",
+      );
     }
-    const product = cart.products.find(p => p.productId.equals(productId));
+    const product = cart.products.find((p) => p.productId.equals(productId));
     if (product) {
       product.quantity = quantity;
     }
@@ -96,7 +143,11 @@ class ShoppingCart {
     return cart.products;
   }
 
-  async checkout(paymentMethod: string, deliveryAddress: string, specialInstructions?: string): Promise<IOrderDocument> {
+  async checkout(
+    paymentMethod: string,
+    deliveryAddress: string,
+    specialInstructions?: string,
+  ): Promise<IOrderDocument> {
     const cart = await this.initializeCart();
     if (cart.orderStatus !== OrderStatus.PENDING) {
       throw new Error("Only pending orders can be checked out");
@@ -121,7 +172,10 @@ class ShoppingCart {
 
   async cancelOrder(): Promise<IOrderDocument> {
     const cart = await this.initializeCart();
-    if (cart.orderStatus === OrderStatus.COMPLETED || cart.orderStatus === OrderStatus.CANCELLED) {
+    if (
+      cart.orderStatus === OrderStatus.COMPLETED ||
+      cart.orderStatus === OrderStatus.CANCELLED
+    ) {
       throw new Error("Cannot cancel a completed or already cancelled order");
     }
     cart.orderStatus = OrderStatus.CANCELLED;
@@ -129,7 +183,9 @@ class ShoppingCart {
     return cart;
   }
 
-  private async calculateTotalPrice(products: IOrderProduct[]): Promise<number> {
+  private async calculateTotalPrice(
+    products: IOrderProduct[],
+  ): Promise<number> {
     let totalPrice = 0;
     for (const product of products) {
       const productDetails = await Product.findById(product.productId);

@@ -4,6 +4,7 @@ import { APIGatewayEvent, Context, Callback } from "aws-lambda";
 import { v4 as uuid } from "uuid";
 import { getNotFoundResponse, parseCookies } from "./utils";
 import addProductsToOrder from "./http/add-product-to-order";
+import removeProductFromOrder from "./http/remove-product-from-order";
 import connectDB from "./db";
 import mongoose from "mongoose";
 import Joi from "joi";
@@ -36,6 +37,7 @@ export const handleHttpRequests = async (
 
   const resource = `${httpMethod}-${path}`;
   const userSub = event.requestContext.authorizer?.claims?.sub;
+  const cookies = parseCookies(event.headers["Cookie"]);
 
   await connectDB();
   switch (resource) {
@@ -46,9 +48,8 @@ export const handleHttpRequests = async (
         quantity: Joi.number().integer().positive().required(),
         sessionId: Joi.string().uuid({ version: "uuidv4" }),
       });
-      const cookies = parseCookies(event.headers["Cookie"]);
+
       requestBody.sessionId = cookies["session_id"] || uuid();
-      console.log(requestBody);
       const { error, value } = schema.validate(requestBody);
 
       if (error) {
@@ -61,12 +62,48 @@ export const handleHttpRequests = async (
         };
       }
 
-      const productId = new mongoose.Types.ObjectId(requestBody.productId);
+      const productIdToAdd = new mongoose.Types.ObjectId(requestBody.productId);
       const quantity = parseInt(requestBody.quantity);
       return await addProductsToOrder({
         userSub: userSub,
         sessionId: requestBody.sessionId,
-        product: { productId: productId, quantity: quantity },
+        product: { productId: productIdToAdd, quantity: quantity },
+      });
+
+    case `DELETE-/order/remove-product/${event.pathParameters?.orderId}`:
+    case `DELETE-/order/auth/remove-product/${event.pathParameters?.orderId}`:
+      requestBody.sessionId = cookies["session_id"];
+      requestBody.orderId = event.pathParameters?.orderId;
+
+      const removeProductSchema = Joi.object({
+        productId: Joi.string().hex().length(24).required(),
+        sessionId: Joi.string().uuid({ version: "uuidv4" }),
+        orderId: Joi.string().hex().length(24).required(),
+      });
+
+      const { error: removeError, value: removeValue } =
+        removeProductSchema.validate(requestBody);
+
+      if (removeError) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            message: "Validation error",
+            details: removeError.details,
+          }),
+        };
+      }
+
+      const productIdToRemove = new mongoose.Types.ObjectId(
+        requestBody.productId,
+      );
+      const orderId = new mongoose.Types.ObjectId(requestBody.orderId);
+
+      return await removeProductFromOrder({
+        orderId: orderId,
+        productId: productIdToRemove,
+        sessionId: requestBody.sessionId,
+        userSub,
       });
 
     default:

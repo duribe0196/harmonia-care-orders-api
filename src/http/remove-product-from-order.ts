@@ -1,23 +1,23 @@
-import { IOrderProduct } from "../db/models/order";
+import User from "../db/models/user";
 import Product from "../db/models/product";
 import ShoppingCart from "./ShoppingCart";
-import { MongooseError } from "mongoose";
-import User from "../db/models/user";
+import mongoose, { MongooseError } from "mongoose";
 
-interface IAddProductToOrderArgs {
-  product: IOrderProduct;
-  userSub?: string;
+interface IRemoveProductFromOrderArgs {
+  orderId: mongoose.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
+  userSub: string;
   sessionId: string;
 }
 
-export default async function addProductsToOrder(
-  args: IAddProductToOrderArgs,
-): Promise<{ body: string; statusCode: number }> {
-  const { product, userSub, sessionId } = args;
+export default async function removeProductFromOrder(
+  args: IRemoveProductFromOrderArgs,
+) {
+  const { productId, userSub, sessionId, orderId } = args;
   try {
     let user;
     if (userSub) user = await User.findOne({ sub: userSub });
-    const productFound = await Product.findById(product.productId);
+    const productFound = await Product.findById(productId);
     if (!productFound) {
       return {
         statusCode: 400,
@@ -25,10 +25,7 @@ export default async function addProductsToOrder(
       };
     }
     const newShoppingCart = new ShoppingCart(user?.id || null, sessionId);
-    const updatedCart = await newShoppingCart.addProduct(
-      product.productId,
-      product.quantity,
-    );
+    const updatedCart = await newShoppingCart.removeProduct(productId);
 
     return {
       statusCode: 200,
