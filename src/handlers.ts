@@ -41,8 +41,8 @@ export const handleHttpRequests = async (
 
   await connectDB();
   switch (resource) {
-    case "POST-/order":
-    case "POST-/order/auth":
+    case "POST-/public/order":
+    case "POST-/auth/order":
       const schema = Joi.object({
         productId: Joi.string().hex().length(24).required(),
         quantity: Joi.number().integer().positive().required(),
@@ -70,8 +70,8 @@ export const handleHttpRequests = async (
         product: { productId: productIdToAdd, quantity: quantity },
       });
 
-    case `DELETE-/order/remove-product/${event.pathParameters?.orderId}`:
-    case `DELETE-/order/auth/remove-product/${event.pathParameters?.orderId}`:
+    case `PUT-/public/order/remove-product/${event.pathParameters?.orderId}`:
+    case `PUT-/auth/order/remove-product/${event.pathParameters?.orderId}`:
       requestBody.sessionId = cookies["session_id"];
       requestBody.orderId = event.pathParameters?.orderId;
 
