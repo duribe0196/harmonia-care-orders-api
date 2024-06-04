@@ -31,6 +31,8 @@ export const handleHttpRequests = async (
         }),
       };
     }
+  } else {
+    requestBody = {};
   }
 
   const resource = `${httpMethod}-${path}`;
@@ -62,6 +64,9 @@ export const handleHttpRequests = async (
       return await checkoutOrder({ userSub, requestBody });
 
     default:
+      console.log(
+        `handleHttpRequests - No matching route found for ${resource}`,
+      );
       return getNotFoundResponse(path, httpMethod);
   }
 };
