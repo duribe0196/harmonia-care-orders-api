@@ -61,7 +61,7 @@ export default async function checkoutOrder(
       user?.id || null,
       requestBody.sessionId,
     );
-    const updatedCart = shoppingCart.checkout({
+    const updatedCart = await shoppingCart.checkout({
       deliveryAddress: requestBody.deliveryAddress,
       contactNumber: requestBody.contactNumber,
       email: requestBody.email,
@@ -74,14 +74,13 @@ export default async function checkoutOrder(
       body: JSON.stringify(updatedCart),
     };
   } catch (e: unknown) {
+    console.error(e);
     if (e instanceof MongooseError) {
-      console.error(e);
       return {
         statusCode: 500,
         body: JSON.stringify({ message: "Error doing checkout of the order" }),
       };
     }
-    console.error(e);
     return {
       statusCode: 500,
       body: JSON.stringify({
