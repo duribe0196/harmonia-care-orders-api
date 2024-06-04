@@ -28,6 +28,8 @@ export interface IOrder {
   specialInstructions?: string;
   paymentMethod: string;
   deliveryAddress: string;
+  contactNumber: string;
+  email: string;
 }
 
 export type IOrderDocument = IOrder & Document;
@@ -74,6 +76,8 @@ const orderSchema: Schema = new Schema(
     specialInstructions: { type: String },
     paymentMethod: { type: String },
     deliveryAddress: { type: String },
+    contactNumber: { type: String },
+    email: { type: String },
   },
   { timestamps: true },
 );

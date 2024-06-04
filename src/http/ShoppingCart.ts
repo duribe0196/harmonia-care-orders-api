@@ -6,6 +6,14 @@ import Order, {
 } from "../db/models/order";
 import Product from "../db/models/product";
 
+interface ICheckoutArgs {
+  paymentMethod: string;
+  deliveryAddress: string;
+  email: string;
+  contactNumber: string;
+  specialInstructions?: string;
+}
+
 class ShoppingCart {
   private readonly userId: mongoose.Schema.Types.ObjectId | null;
   private readonly sessionId: string;
@@ -143,11 +151,14 @@ class ShoppingCart {
     return cart.products;
   }
 
-  async checkout(
-    paymentMethod: string,
-    deliveryAddress: string,
-    specialInstructions?: string,
-  ): Promise<IOrderDocument> {
+  async checkout(args: ICheckoutArgs): Promise<IOrderDocument> {
+    const {
+      deliveryAddress,
+      paymentMethod,
+      specialInstructions,
+      email,
+      contactNumber,
+    } = args;
     const cart = await this.initializeCart();
     if (cart.orderStatus !== OrderStatus.PENDING) {
       throw new Error("Only pending orders can be checked out");
@@ -155,6 +166,8 @@ class ShoppingCart {
     cart.paymentMethod = paymentMethod;
     cart.deliveryAddress = deliveryAddress;
     cart.specialInstructions = specialInstructions;
+    cart.email = email;
+    cart.contactNumber = contactNumber;
     cart.orderStatus = OrderStatus.CHECKOUT;
     await cart.save();
     return cart;

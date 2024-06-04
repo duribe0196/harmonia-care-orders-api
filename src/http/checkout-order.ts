@@ -10,6 +10,8 @@ interface IRequestBody {
   sessionId: string;
   paymentMethod: string;
   deliveryAddress: string;
+  contactNumber: string;
+  email: string;
   specialInstructions?: string;
 }
 
@@ -27,6 +29,8 @@ export default async function checkoutOrder(
       orderId: Joi.string().hex().length(24).required(),
       sessionId: Joi.string().uuid({ version: "uuidv4" }),
       paymentMethod: Joi.string().required(),
+      contactNumber: Joi.string().required(),
+      email: Joi.string().required(),
       deliveryAddress: Joi.string().required(),
       specialInstructions: Joi.string().optional(),
     });
@@ -54,11 +58,13 @@ export default async function checkoutOrder(
       user?.id || null,
       requestBody.sessionId,
     );
-    const updatedCart = shoppingCart.checkout(
-      requestBody.paymentMethod,
-      requestBody.deliveryAddress,
-      requestBody.specialInstructions,
-    );
+    const updatedCart = shoppingCart.checkout({
+      deliveryAddress: requestBody.deliveryAddress,
+      contactNumber: requestBody.contactNumber,
+      email: requestBody.email,
+      specialInstructions: requestBody.specialInstructions,
+      paymentMethod: requestBody.paymentMethod,
+    });
 
     return {
       statusCode: 200,
