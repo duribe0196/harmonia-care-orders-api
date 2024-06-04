@@ -5,9 +5,8 @@ import { v4 as uuid } from "uuid";
 import { getNotFoundResponse, parseCookies } from "./utils";
 import addProductsToOrder from "./http/add-product-to-order";
 import removeProductFromOrder from "./http/remove-product-from-order";
+import checkoutOrder from "./http/checkout-order";
 import connectDB from "./db";
-import mongoose from "mongoose";
-import Joi from "joi";
 
 export const handleHttpRequests = async (
   event: APIGatewayEvent,
@@ -43,68 +42,24 @@ export const handleHttpRequests = async (
   switch (resource) {
     case "POST-/public/order":
     case "POST-/auth/order":
-      const schema = Joi.object({
-        productId: Joi.string().hex().length(24).required(),
-        quantity: Joi.number().integer().positive().required(),
-        sessionId: Joi.string().uuid({ version: "uuidv4" }),
-      });
-
       requestBody.sessionId = cookies["session_id"] || uuid();
-      const { error, value } = schema.validate(requestBody);
-
-      if (error) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            message: "Validation error",
-            details: error.details,
-          }),
-        };
-      }
-
-      const productIdToAdd = new mongoose.Types.ObjectId(requestBody.productId);
-      const quantity = parseInt(requestBody.quantity);
-      return await addProductsToOrder({
-        userSub: userSub,
-        sessionId: requestBody.sessionId,
-        product: { productId: productIdToAdd, quantity: quantity },
-      });
+      return await addProductsToOrder({ requestBody, userSub });
 
     case `PUT-/public/order/remove-product/${event.pathParameters?.orderId}`:
     case `PUT-/auth/order/remove-product/${event.pathParameters?.orderId}`:
       requestBody.sessionId = cookies["session_id"];
       requestBody.orderId = event.pathParameters?.orderId;
 
-      const removeProductSchema = Joi.object({
-        productId: Joi.string().hex().length(24).required(),
-        sessionId: Joi.string().uuid({ version: "uuidv4" }),
-        orderId: Joi.string().hex().length(24).required(),
-      });
-
-      const { error: removeError, value: removeValue } =
-        removeProductSchema.validate(requestBody);
-
-      if (removeError) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            message: "Validation error",
-            details: removeError.details,
-          }),
-        };
-      }
-
-      const productIdToRemove = new mongoose.Types.ObjectId(
-        requestBody.productId,
-      );
-      const orderId = new mongoose.Types.ObjectId(requestBody.orderId);
-
       return await removeProductFromOrder({
-        orderId: orderId,
-        productId: productIdToRemove,
-        sessionId: requestBody.sessionId,
+        requestBody,
         userSub,
       });
+
+    case `PUT-/public/order/checkout/${event.pathParameters?.orderId}`:
+    case `PUT-/auth/order/checkout/${event.pathParameters?.orderId}`:
+      requestBody.sessionId = cookies["session_id"];
+      requestBody.orderId = event.pathParameters?.orderId;
+      return await checkoutOrder({ userSub, requestBody });
 
     default:
       return getNotFoundResponse(path, httpMethod);

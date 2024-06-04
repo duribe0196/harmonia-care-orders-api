@@ -1,4 +1,4 @@
-### POST request to add products to an order
+### POST request to add products to an order - public
 POST {{baseUrl}}/public/order
 Content-Type: application/json
 Cookie: session_id={{sessionId}}
@@ -18,10 +18,19 @@ Authorization: Bearer {{authToken}}
   "quantity": 1
 }
 
-### PUT request to remove products from an order
-PUT {{baseUrl}}/public/order/remove-product
+### PUT request to remove products from an order - public
+PUT {{baseUrl}}/public/order/remove-product/66578a6dcc7f45d177102559
 Content-Type: application/json
 Cookie: session_id={{sessionId}}
+
+{
+  "productId": "66562e3ec8452f39cda8088e"
+}
+
+### PUT request to remove products from an order - auth
+PUT {{baseUrl}}/auth/order/remove-product/66578a6dcc7f45d177102559
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "productId": "66562e3ec8452f39cda8088e"
