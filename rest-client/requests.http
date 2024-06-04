@@ -36,4 +36,29 @@ Authorization: Bearer {{authToken}}
   "productId": "66562e3ec8452f39cda8088e"
 }
 
+### PUT request to checkout an order - auth
+PUT {{baseUrl}}/auth/order/checkout/66578a6dcc7f45d177102559
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "paymentMethod": "TC",
+  "contactNumber": "+573008132438",
+  "email": "uribesotod@gmail.com",
+  "deliveryAddress": "some delivery address"
+}
+
+### PUT request to checkout an order - public
+PUT {{baseUrl}}/public/order/checkout/66578a6dcc7f45d177102559
+Content-Type: application/json
+Cookie: session_id={{sessionId}}
+
+{
+  "paymentMethod": "TC",
+  "contactNumber": "+573008132438",
+  "email": "uribesotod@gmail.com",
+  "deliveryAddress": "some delivery address"
+}
+
+
 

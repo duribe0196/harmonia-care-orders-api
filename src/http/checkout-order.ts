@@ -30,7 +30,7 @@ export default async function checkoutOrder(
       sessionId: Joi.string().uuid({ version: "uuidv4" }),
       paymentMethod: Joi.string().required(),
       contactNumber: Joi.string().required(),
-      email: Joi.string().required(),
+      email: Joi.string().email(),
       deliveryAddress: Joi.string().required(),
       specialInstructions: Joi.string().optional(),
     });
