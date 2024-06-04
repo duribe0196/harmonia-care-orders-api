@@ -61,7 +61,7 @@ export default async function checkoutOrder(
       user?.id || null,
       requestBody.sessionId,
     );
-    const updatedCart = await shoppingCart.checkout({
+    const [err, updatedCart] = await shoppingCart.checkout({
       deliveryAddress: requestBody.deliveryAddress,
       contactNumber: requestBody.contactNumber,
       email: requestBody.email,
@@ -70,8 +70,10 @@ export default async function checkoutOrder(
     });
 
     return {
-      statusCode: 200,
-      body: JSON.stringify(updatedCart),
+      statusCode: err ? 500 : 200,
+      body: JSON.stringify(
+        err?.message ? { message: err.message } : updatedCart,
+      ),
     };
   } catch (e: unknown) {
     console.error(e);

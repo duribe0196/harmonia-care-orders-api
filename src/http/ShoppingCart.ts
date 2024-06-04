@@ -151,7 +151,9 @@ class ShoppingCart {
     return cart.products;
   }
 
-  async checkout(args: ICheckoutArgs): Promise<IOrderDocument> {
+  async checkout(
+    args: ICheckoutArgs,
+  ): Promise<[Error | null, IOrderDocument | null]> {
     const {
       deliveryAddress,
       paymentMethod,
@@ -161,7 +163,7 @@ class ShoppingCart {
     } = args;
     const cart = await this.initializeCart();
     if (cart.orderStatus !== OrderStatus.PENDING) {
-      throw new Error("Only pending orders can be checked out");
+      return [Error("Only pending orders can be checked out"), null];
     }
     cart.paymentMethod = paymentMethod;
     cart.deliveryAddress = deliveryAddress;
@@ -170,7 +172,7 @@ class ShoppingCart {
     cart.contactNumber = contactNumber;
     cart.orderStatus = OrderStatus.CHECKOUT;
     await cart.save();
-    return cart;
+    return [null, cart];
   }
 
   async completeOrder(): Promise<IOrderDocument> {
