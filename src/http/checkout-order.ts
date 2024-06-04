@@ -25,6 +25,9 @@ export default async function checkoutOrder(
 ): Promise<{ body: string; statusCode: number }> {
   try {
     const { requestBody, userSub } = args;
+    console.log(
+      `checkoutOrder - starting checkout for order ${requestBody.orderId}`,
+    );
     const schema = Joi.object({
       orderId: Joi.string().hex().length(24).required(),
       sessionId: Joi.string().uuid({ version: "uuidv4" }),
