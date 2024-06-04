@@ -60,5 +60,16 @@ Cookie: session_id={{sessionId}}
   "deliveryAddress": "some delivery address"
 }
 
+### GET request to get order - public
+GET {{baseUrl}}/public/order
+Content-Type: application/json
+Cookie: session_id={{sessionId}}
+
+### GET request to get order - public
+GET {{baseUrl}}/auth/order
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+
 
 
