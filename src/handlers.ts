@@ -6,6 +6,7 @@ import { getNotFoundResponse, parseCookies } from "./utils";
 import addProductsToOrder from "./http/add-product-to-order";
 import removeProductFromOrder from "./http/remove-product-from-order";
 import checkoutOrder from "./http/checkout-order";
+import getOrder from "./http/get-order";
 import connectDB from "./db";
 
 export const handleHttpRequests = async (
@@ -42,6 +43,11 @@ export const handleHttpRequests = async (
 
   await connectDB();
   switch (resource) {
+    case "GET-/public/order":
+    case "GET-/auth/order":
+      requestBody.sessionId = cookies["session_id"] || uuid();
+      return await getOrder({ requestBody, userSub });
+
     case "POST-/public/order":
     case "POST-/auth/order":
       requestBody.sessionId = cookies["session_id"] || uuid();
